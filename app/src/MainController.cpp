@@ -46,7 +46,7 @@ void MainController::draw_lighthouse() {
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, -1.0f, -3.0f));
+    model = glm::translate(model, glm::vec3(0.0f, -0.5f, -3.0f));
     model = glm::scale(model, glm::vec3(0.3f));
     shader->set_mat4("model", model);
     lighthouse->draw(shader);
@@ -82,9 +82,41 @@ void MainController::draw_skybox() {
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
     graphics->draw_skybox(shader, skybox);
 }
+void MainController::draw_water() {
+    auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
+    auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+    engine::resources::Model *water = resources->model("ocean");
+    //shader
+    engine::resources::Shader *shader = resources->shader("basic");
+    shader->use();
+    shader->set_mat4("projection", graphics->projection_matrix());
+    shader->set_mat4("view", graphics->camera()->view_matrix());
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, -1.0f, -3.0f));
+    model = glm::scale(model, glm::vec3(0.3f));
+    shader->set_mat4("model", model);
+    water->draw(shader);
+}
+void MainController::draw_boat() {
+    auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
+    auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+    engine::resources::Model *boat = resources->model("boat");
+    //shader
+    engine::resources::Shader *shader = resources->shader("basic");
+    shader->use();
+    shader->set_mat4("projection", graphics->projection_matrix());
+    shader->set_mat4("view", graphics->camera()->view_matrix());
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(1.0f, -1.0f, -7.0f));
+    model = glm::scale(model, glm::vec3(0.07f));
+    shader->set_mat4("model", model);
+    boat->draw(shader);
+}
 void MainController::draw() {
     //clear buffers (color buffer, depth buffer)
     draw_lighthouse();
+    draw_water();
+    draw_boat();
     draw_skybox();
     //swap buffer
 }

@@ -6,7 +6,8 @@
 
       },
       "boat": {
-        "path": "boat/boat.obj"
+        "path": "boat2/boat.obj",
+        "flip_uvs": true
 
       },
       "ocean": {
