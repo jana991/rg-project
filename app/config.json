@@ -2,10 +2,12 @@
   "resources": {
     "models": {
       "lighthouse": {
-        "path": "lighthouse/lighthouse.obj"
+        "path": "lighthouse/Lighthouse_island_toy.obj",
+        "flip_uvs": true
       },
       "boat": {
         "path": "boat/boat.obj"
+
       }
     }
   },
