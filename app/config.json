@@ -1,6 +1,9 @@
 {
   "resources": {
     "models": {
+      "lighthouse": {
+        "path": "lighthouse/lighthouse.obj"
+      }
     }
   },
   "window": {
