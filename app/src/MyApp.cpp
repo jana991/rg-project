@@ -12,5 +12,7 @@ namespace app {
 void MyApp::app_setup() {
     spdlog::info("App setup completed");
     auto maincontroller=register_controller<app::MainController>();
+    maincontroller->after(engine::core::Controller::get<engine::core::EngineControllersEnd>());
+
 }
 } // app
