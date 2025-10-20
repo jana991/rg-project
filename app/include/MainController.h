@@ -11,7 +11,8 @@ class MainController: public engine::core::Controller {
     void initialize() override;
     bool loop() override;
     void draw_lighthouse();
-
+    void update_camera();
+    void update() override;
     void begin_draw() override;
     void draw() override;
 
