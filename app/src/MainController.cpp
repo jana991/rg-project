@@ -77,7 +77,7 @@ void MainController::begin_draw() {
 }
 void MainController::draw_skybox() {
     auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
-    auto skybox = resources->skybox("skyboxbak");
+    auto skybox = resources->skybox("night_skybox");
     auto shader = resources->shader("skybox");
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
     graphics->draw_skybox(shader, skybox);
