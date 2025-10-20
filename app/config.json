@@ -3,6 +3,9 @@
     "models": {
       "lighthouse": {
         "path": "lighthouse/lighthouse.obj"
+      },
+      "boat": {
+        "path": "boat/boat.obj"
       }
     }
   },
