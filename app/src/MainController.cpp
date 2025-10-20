@@ -41,7 +41,7 @@ void MainController::draw_lighthouse() {
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
     engine::resources::Model *lighthouse = resources->model("lighthouse");
     //shader
-    engine::resources::Shader *shader = resources->shader("lighthouse");
+    engine::resources::Shader *shader = resources->shader("basic");
     shader->use();
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
