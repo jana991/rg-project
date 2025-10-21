@@ -5,13 +5,13 @@
 #include "MainController.h"
 
 #include "../../engine/libs/assimp/code/AssetLib/3MF/3MFXmlTags.h"
+#include "../../engine/libs/assimp/code/AssetLib/glTF2/glTF2Exporter.h"
 #include "../../engine/libs/spdlog/include/spdlog/spdlog.h"
 
 #include <engine/graphics/GraphicsController.hpp>
 #include <engine/graphics/OpenGL.hpp>
 #include <engine/platform/PlatformController.hpp>
 #include <engine/resources/ResourcesController.hpp>
-
 namespace app {
 class MainPlatformEventObserver : public engine::platform::PlatformEventObserver {
 public:
@@ -23,11 +23,15 @@ void MainPlatformEventObserver::on_mouse_move(engine::platform::MousePosition po
 }
 
 
+
 void MainController::initialize() {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     platform->register_platform_event_observer(std::make_unique<MainPlatformEventObserver>());
     engine::graphics::OpenGL::enable_depth_testing();
 }
+
+
+
 bool MainController::loop() {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     if (platform->key(engine::platform::KeyId::KEY_ESCAPE).is_down()) {
