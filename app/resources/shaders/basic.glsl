@@ -22,6 +22,7 @@ void main()
 }
 //#shader fragment
 #version 330 core
+out vec4 FragColor;
 struct Material {
     sampler2D diffuse;
     sampler2D specular;
@@ -93,12 +94,12 @@ void main()
     // this fragment's final color.
     // == =====================================================
     // phase 1: directional lighting
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);
+    //vec3 result = CalcDirLight(dirLight, norm, viewDir);
     // phase 2: point lights
-    for(int i = 0; i < NR_POINT_LIGHTS; i++)
-    result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+    //for(int i = 0; i < NR_POINT_LIGHTS; i++)
+    //result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
     // phase 3: spot light
-    result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
+    vec3 result = CalcSpotLight(spotLight, norm, FragPos, viewDir);
 
     FragColor = vec4(result, 1.0);
 }

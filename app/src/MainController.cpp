@@ -39,21 +39,57 @@ bool MainController::loop() {
     }
     return true;
 }
+static float angle = 0.0f;
 void MainController::draw_lighthouse() {
-    //model
+
     auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+    auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+
     engine::resources::Model *lighthouse = resources->model("lighthouse");
-    //shader
+
     engine::resources::Shader *shader = resources->shader("basic");
     shader->use();
+
+    auto camera = graphics->camera();
+    shader->set_vec3("viewPos", camera->Position);
+
+
+    glm::vec3 lighthousePos = glm::vec3(0.0f, -0.5f, -3.0f);
+    glm::vec3 spotlightPos = lighthousePos + glm::vec3(0.0f, 2.0f, 0.0f); // na vrhu svetionika
+
+
+    shader->set_vec3("spotLight.position", spotlightPos);
+    angle += 0.5f * platform->dt(); // 0.5 rad/s
+    glm::vec3 spotlightDir = glm::vec3(sin(angle), -0.3f, cos(angle));
+
+    shader->set_vec3("spotLight.direction", spotlightDir);
+    shader->set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+    shader->set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+
+    shader->set_float("spotLight.constant", 1.0f);
+    shader->set_float("spotLight.linear", 0.09f);
+    shader->set_float("spotLight.quadratic", 0.032f);
+
+    shader->set_vec3("spotLight.ambient", glm::vec3(0.05f));
+    shader->set_vec3("spotLight.diffuse", glm::vec3(1.0f));
+    shader->set_vec3("spotLight.specular", glm::vec3(1.0f));
+
+   
+    shader->set_float("material.shininess", 32.0f);
+
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, -0.5f, -3.0f));
     model = glm::scale(model, glm::vec3(0.3f));
     shader->set_mat4("model", model);
+    shader->set_int("material.diffuse", 0);
+    shader->set_int("material.specular", 1);
+    shader->set_float("material.shininess", 32.0f);
     lighthouse->draw(shader);
+
+
 }
 void MainController::update_camera() {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
