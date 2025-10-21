@@ -56,28 +56,32 @@ void MainController::draw_lighthouse() {
 
 
     glm::vec3 lighthousePos = glm::vec3(0.0f, -0.5f, -3.0f);
-    glm::vec3 spotlightPos = lighthousePos + glm::vec3(0.0f, 2.0f, 0.0f); // na vrhu svetionika
+    glm::vec3 spotlightPos = lighthousePos + glm::vec3(0.0f, 4.5f, 0.0f); // na vrhu svetionika
 
 
     shader->set_vec3("spotLight.position", spotlightPos);
     angle += 0.5f * platform->dt(); // 0.5 rad/s
-    glm::vec3 spotlightDir = glm::vec3(sin(angle), -0.3f, cos(angle));
+    glm::vec3 spotlightDir = glm::vec3(sin(angle), -1.0f, cos(angle));
 
     shader->set_vec3("spotLight.direction", spotlightDir);
-    shader->set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-    shader->set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+    shader->set_float("spotLight.cutOff", glm::cos(glm::radians(6.0f)));
+    shader->set_float("spotLight.outerCutOff", glm::cos(glm::radians(10.0f)));
 
     shader->set_float("spotLight.constant", 1.0f);
     shader->set_float("spotLight.linear", 0.09f);
     shader->set_float("spotLight.quadratic", 0.032f);
 
-    shader->set_vec3("spotLight.ambient", glm::vec3(0.05f));
-    shader->set_vec3("spotLight.diffuse", glm::vec3(1.0f));
-    shader->set_vec3("spotLight.specular", glm::vec3(1.0f));
+    shader->set_vec3("spotLight.ambient", glm::vec3(0.1f));
+    shader->set_vec3("spotLight.diffuse", glm::vec3(4.0f));
+    shader->set_vec3("spotLight.specular", glm::vec3(2.0f));
 
-   
+
     shader->set_float("material.shininess", 32.0f);
-
+    glm::vec3 dirLightDirection = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f));
+    shader->set_vec3("dirLight.direction", dirLightDirection);
+    shader->set_vec3("dirLight.ambient", glm::vec3(0.05f));
+    shader->set_vec3("dirLight.diffuse", glm::vec3(0.4f));
+    shader->set_vec3("dirLight.specular", glm::vec3(0.5f));
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
     glm::mat4 model = glm::mat4(1.0f);
