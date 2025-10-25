@@ -9,7 +9,9 @@ add_executable(${PROJECT_NAME} ${sources} ${headers}
         src/MyApp.cpp
         include/MyApp.h
         include/MainController.h
-        src/MainController.cpp)
+        src/MainController.cpp
+        src/GUIController.cpp
+        include/GUIController.h)
 target_link_libraries(${PROJECT_NAME} PRIVATE matf-rg-engine)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")

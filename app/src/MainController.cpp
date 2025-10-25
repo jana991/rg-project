@@ -7,6 +7,7 @@
 #include "../../engine/libs/assimp/code/AssetLib/3MF/3MFXmlTags.h"
 #include "../../engine/libs/assimp/code/AssetLib/glTF2/glTF2Exporter.h"
 #include "../../engine/libs/spdlog/include/spdlog/spdlog.h"
+#include "GUIController.h"
 
 #include <engine/graphics/GraphicsController.hpp>
 #include <engine/graphics/OpenGL.hpp>
@@ -18,8 +19,11 @@ public:
     void on_mouse_move(engine::platform::MousePosition position) override;
 };
 void MainPlatformEventObserver::on_mouse_move(engine::platform::MousePosition position) {
-    auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
-    camera->rotate_camera(position.dx, position.dy);
+    auto gui_controller=engine::core::Controller::get<GUIController>();
+    if(!gui_controller->is_enabled()) {
+        auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+        camera->rotate_camera(position.dx, position.dy);
+    }
 }
 
 
@@ -96,6 +100,10 @@ void MainController::draw_lighthouse() {
 
 }
 void MainController::update_camera() {
+    auto gui_controller=engine::core::Controller::get<GUIController>();
+    if(gui_controller->is_enabled()) {
+     return;
+    }
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
     auto camera = graphics->camera();
