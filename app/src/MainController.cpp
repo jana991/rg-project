@@ -43,6 +43,9 @@ bool MainController::loop() {
     }
     return true;
 }
+static bool spotlightRotating = false;
+static bool waitingForRotation = false;
+static float spotlightTimer = 0.0f;
 static float angle = 0.0f;
 void MainController::draw_lighthouse() {
 
@@ -64,8 +67,17 @@ void MainController::draw_lighthouse() {
 
 
     shader->set_vec3("spotLight.position", spotlightPos);
-    angle += 0.5f * platform->dt(); // 0.5 rad/s
-    glm::vec3 spotlightDir = glm::vec3(sin(angle), -1.0f, cos(angle));
+
+    glm::vec3 spotlightDir;
+
+// pozicije da li su dobre
+    if (spotlightRotating) {
+        angle += 0.5f * platform->dt();
+        spotlightDir = glm::normalize(glm::vec3(sin(angle), -1.0f, cos(angle)));
+    } else {
+
+        spotlightDir = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
+    }
 
     shader->set_vec3("spotLight.direction", spotlightDir);
     shader->set_float("spotLight.cutOff", glm::cos(glm::radians(6.0f)));
@@ -102,7 +114,7 @@ void MainController::draw_lighthouse() {
 void MainController::update_camera() {
     auto gui_controller=engine::core::Controller::get<GUIController>();
     if(gui_controller->is_enabled()) {
-     return;
+        return;
     }
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
@@ -122,7 +134,26 @@ void MainController::update_camera() {
     }
 }
 void MainController::update() {
+
     update_camera();
+
+    auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+    float dt = platform->dt();
+    // da li je g pritisnuto, i da li nije već pre toga
+    if (platform->key(engine::platform::KeyId::KEY_G).state()==engine::platform::Key::State::JustPressed && !waitingForRotation && !spotlightRotating) {
+        waitingForRotation = true;
+        spotlightTimer = 0.0f;
+        spdlog::info("Key G pressed, initialize event A");
+    }
+    // čeka dve sekunde pa rotira
+    if (waitingForRotation) {
+        spotlightTimer += dt;
+        if (spotlightTimer >= 2.0f) {
+            waitingForRotation = false;
+            spotlightRotating = true;
+            spdlog::info("event A: Spotlight rotation started");
+        }
+    }
 }
 void MainController::begin_draw() {
     engine::graphics::OpenGL::clear_buffers();
