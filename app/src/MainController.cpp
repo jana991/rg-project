@@ -49,6 +49,9 @@ static bool waitingForRotation = false;
 static float spotlightTimer = 0.0f;
 static float angle = 0.0f;
 static bool spotlightRed = false; // da pratimo da li je svetlo već postalo crveno
+// za brod
+static bool shipMoving = false;
+static glm::vec3 boatPos=glm::vec3(1.0f,-1.0f,-7.0f);
 
 void MainController::draw_lighthouse() {
 
@@ -92,8 +95,8 @@ void MainController::draw_lighthouse() {
 
     shader->set_vec3("spotLight.ambient", glm::vec3(0.1f));
     if (spotlightRed) {
-        shader->set_vec3("spotLight.diffuse", glm::vec3(4.0f, 0.0f, 0.0f));
-        shader->set_vec3("spotLight.specular", glm::vec3(2.0f, 0.0f, 0.0f));
+        shader->set_vec3("spotLight.diffuse", glm::vec3(10.0f, 0.0f, 0.0f));
+        shader->set_vec3("spotLight.specular", glm::vec3(5.0f, 0.0f, 0.0f));
     } else {
         shader->set_vec3("spotLight.diffuse", glm::vec3(4.0f));
         shader->set_vec3("spotLight.specular", glm::vec3(2.0f));
@@ -166,13 +169,21 @@ void MainController::update() {
     if (spotlightRotating) {
         spotlightTimer += dt;
 
-        // Rotiraj svetlo
+
         angle += 0.5f * dt; // rad/s
 
         // Event B: 4 sekunde nakon početka rotacije svetlo postaje crveno
         if (spotlightTimer >= 6.0f && !spotlightRed) {
             spotlightRed = true;
+            shipMoving=true;
             spdlog::info("event B: Spotlight changed to red");
+        }
+    }
+    if (shipMoving) {
+        boatPos.x += 0.2f * dt;  // polako napred
+        spotlightTimer += dt;
+        if(spotlightTimer>=30.0f) {
+            shipMoving=false;
         }
     }
 
@@ -203,6 +214,7 @@ void MainController::draw_water() {
     shader->set_mat4("model", model);
     water->draw(shader);
 }
+
 void MainController::draw_boat() {
     auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
@@ -214,7 +226,7 @@ void MainController::draw_boat() {
     shader->set_mat4("view", graphics->camera()->view_matrix());
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(1.0f, -1.0f, -7.0f));
+    model = glm::translate(model,boatPos);
     model = glm::scale(model, glm::vec3(0.07f));
     shader->set_mat4("model", model);
 
