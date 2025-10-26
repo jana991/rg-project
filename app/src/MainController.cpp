@@ -43,15 +43,7 @@ bool MainController::loop() {
     }
     return true;
 }
-// za svetionik
-static bool spotlightRotating = false;
-static bool waitingForRotation = false;
-static float spotlightTimer = 0.0f;
-static float angle = 0.0f;
-static bool spotlightRed = false; // da pratimo da li je svetlo već postalo crveno
-// za brod
-static bool shipMoving = false;
-static glm::vec3 boatPos=glm::vec3(1.0f,-1.0f,-7.0f);
+
 
 void MainController::draw_lighthouse() {
 
@@ -77,9 +69,9 @@ void MainController::draw_lighthouse() {
     glm::vec3 spotlightDir;
 
 // pozicije da li su dobre
-    if (spotlightRotating) {
-        angle += 0.5f * platform->dt();
-        spotlightDir = glm::normalize(glm::vec3(sin(angle), -1.0f, cos(angle)));
+    if (spotlight.spotlightRotating) {
+        spotlight.angle += 0.5f * platform->dt();
+        spotlightDir = glm::normalize(glm::vec3(sin(spotlight.angle), -1.0f, cos(spotlight.angle)));
     } else {
 
         spotlightDir = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
@@ -94,7 +86,7 @@ void MainController::draw_lighthouse() {
     shader->set_float("spotLight.quadratic", 0.032f);
 
     shader->set_vec3("spotLight.ambient", glm::vec3(0.1f));
-    if (spotlightRed) {
+    if (spotlight.spotlightRed) {
         shader->set_vec3("spotLight.diffuse", glm::vec3(10.0f, 0.0f, 0.0f));
         shader->set_vec3("spotLight.specular", glm::vec3(5.0f, 0.0f, 0.0f));
     } else {
@@ -151,41 +143,11 @@ void MainController::update() {
 
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     float dt = platform->dt();
+    update_spotlight(dt);
     // da li je g pritisnuto, i da li nije već pre toga
-    if (platform->key(engine::platform::KeyId::KEY_G).state()==engine::platform::Key::State::JustPressed && !waitingForRotation && !spotlightRotating) {
-        waitingForRotation = true;
-        spotlightTimer = 0.0f;
-        spdlog::info("Key G pressed, initialize event A");
-    }
-    // čeka dve sekunde pa rotira
-    if (waitingForRotation) {
-        spotlightTimer += dt;
-        if (spotlightTimer >= 2.0f) {
-            waitingForRotation = false;
-            spotlightRotating = true;
-            spdlog::info("event A: Spotlight rotation started");
-        }
-    }
-    if (spotlightRotating) {
-        spotlightTimer += dt;
 
 
-        angle += 0.5f * dt; // rad/s
 
-        // Event B: 4 sekunde nakon početka rotacije svetlo postaje crveno
-        if (spotlightTimer >= 6.0f && !spotlightRed) {
-            spotlightRed = true;
-            shipMoving=true;
-            spdlog::info("event B: Spotlight changed to red");
-        }
-    }
-    if (shipMoving) {
-        boatPos.x += 0.2f * dt;  // polako napred
-        spotlightTimer += dt;
-        if(spotlightTimer>=30.0f) {
-            shipMoving=false;
-        }
-    }
 
 
 }
@@ -219,18 +181,18 @@ void MainController::draw_boat() {
     auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-    engine::resources::Model *boat = resources->model("boat");
+    engine::resources::Model *Boat = resources->model("boat");
     engine::resources::Shader *shader = resources->shader("basic");
     shader->use();
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model,boatPos);
+    model = glm::translate(model,boat.boatPos);
     model = glm::scale(model, glm::vec3(0.07f));
     shader->set_mat4("model", model);
 
-    boat->draw(shader);
+    Boat->draw(shader);
 }
 void MainController::draw() {
     //clear buffers (color buffer, depth buffer)
@@ -240,6 +202,48 @@ void MainController::draw() {
     draw_skybox();
     //swap buffer
 }
+void MainController::update_spotlight(float dt) {
+    auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+    if (platform->key(engine::platform::KeyId::KEY_G).state()==engine::platform::Key::State::JustPressed && !spotlight.waitingForRotation && !spotlight.spotlightRotating) {
+        spotlight.waitingForRotation = true;
+        spotlight.spotlightTimer = 0.0f;
+        spdlog::info("Key G pressed, initialize event A");
+    }
+
+    // čeka dve sekunde pa rotira
+    if (spotlight.waitingForRotation) {
+        spotlight.spotlightTimer += dt;
+        if (spotlight.spotlightTimer >= 2.0f) {
+            spotlight.waitingForRotation = false;
+            spotlight.spotlightRotating = true;
+            spdlog::info("event A: Spotlight rotation started");
+        }
+    }
+    if (spotlight.spotlightRotating) {
+        spotlight.spotlightTimer += dt;
+
+
+        spotlight.angle += 0.5f * dt; // rad/s
+
+        // Event B: 4 sekunde nakon početka rotacije svetlo postaje crveno
+        if (spotlight.spotlightTimer >= 6.0f && !spotlight.spotlightRed) {
+            spotlight.spotlightRed = true;
+            boat.shipMoving=true;
+            spdlog::info("event B: Spotlight changed to red");
+        }
+    }
+    update_boat(dt);
+}
+void MainController::update_boat(float dt) {
+    if (boat.shipMoving) {
+        boat.boatPos.x += 0.2f * dt;  // polako napred
+        spotlight.spotlightTimer += dt;
+        if(spotlight.spotlightTimer>=30.0f) {
+            boat.shipMoving=false;
+        }
+    }
+}
+
 void MainController::end_draw() {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     platform->swap_buffers();
