@@ -48,12 +48,8 @@ static bool spotlightRotating = false;
 static bool waitingForRotation = false;
 static float spotlightTimer = 0.0f;
 static float angle = 0.0f;
-// za brod
-static bool boatMoving = false;
-static float eventBTimer = 0.0f;
-static float boatAngle = 0.0f;
-static float boatRadius = 3.0f;
-static glm::vec3 boatCenter = glm::vec3(0.0f, -1.0f, -3.0f);
+static bool spotlightRed = false; // da pratimo da li je svetlo već postalo crveno
+
 void MainController::draw_lighthouse() {
 
     auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
@@ -95,8 +91,14 @@ void MainController::draw_lighthouse() {
     shader->set_float("spotLight.quadratic", 0.032f);
 
     shader->set_vec3("spotLight.ambient", glm::vec3(0.1f));
-    shader->set_vec3("spotLight.diffuse", glm::vec3(4.0f));
-    shader->set_vec3("spotLight.specular", glm::vec3(2.0f));
+    if (spotlightRed) {
+        shader->set_vec3("spotLight.diffuse", glm::vec3(4.0f, 0.0f, 0.0f));
+        shader->set_vec3("spotLight.specular", glm::vec3(2.0f, 0.0f, 0.0f));
+    } else {
+        shader->set_vec3("spotLight.diffuse", glm::vec3(4.0f));
+        shader->set_vec3("spotLight.specular", glm::vec3(2.0f));
+    }
+
 
 
     shader->set_float("material.shininess", 32.0f);
@@ -161,14 +163,19 @@ void MainController::update() {
             spdlog::info("event A: Spotlight rotation started");
         }
     }
-    // drugi event za brod
-    if (spotlightRotating && !boatMoving) {
-        eventBTimer += dt;
-        if (eventBTimer >= 4.0f) {
-            boatMoving = true;
-            spdlog::info("event B: Boat circulating started");
+    if (spotlightRotating) {
+        spotlightTimer += dt;
+
+        // Rotiraj svetlo
+        angle += 0.5f * dt; // rad/s
+
+        // Event B: 4 sekunde nakon početka rotacije svetlo postaje crveno
+        if (spotlightTimer >= 6.0f && !spotlightRed) {
+            spotlightRed = true;
+            spdlog::info("event B: Spotlight changed to red");
         }
     }
+
 
 }
 void MainController::begin_draw() {
@@ -199,26 +206,18 @@ void MainController::draw_water() {
 void MainController::draw_boat() {
     auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
-    auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+
     engine::resources::Model *boat = resources->model("boat");
-    //shader
     engine::resources::Shader *shader = resources->shader("basic");
     shader->use();
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
+
     glm::mat4 model = glm::mat4(1.0f);
-
-
-    if (boatMoving) {
-        boatAngle += 0.4f * platform->dt(); // brzina kretanja
-    }
-
-    float boatX = boatCenter.x + boatRadius * sin(boatAngle);
-    float boatZ = boatCenter.z + boatRadius * cos(boatAngle);
-
-    model = glm::translate(model, glm::vec3(boatX, boatCenter.y, boatZ));
+    model = glm::translate(model, glm::vec3(1.0f, -1.0f, -7.0f));
     model = glm::scale(model, glm::vec3(0.07f));
     shader->set_mat4("model", model);
+
     boat->draw(shader);
 }
 void MainController::draw() {
