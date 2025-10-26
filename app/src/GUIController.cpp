@@ -54,8 +54,7 @@ void GUIController::draw() {
         main->spotlightLinear = 0.09f;
         main->spotlightQuadratic = 0.032f;
     }
-
-
+    ImGui::SameLine();
     if (ImGui::Button("Reset DirLight")) {
         main->dirLightColor = glm::vec3(1.0f);
         main->dirLightAmbientIntensity = 0.05f;

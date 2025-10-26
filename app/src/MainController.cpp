@@ -134,7 +134,7 @@ void MainController::update() {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     float dt = platform->dt();
     update_spotlight(dt);
-    // da li je g pritisnuto, i da li nije već pre toga
+
 }
 void MainController::begin_draw() {
     engine::graphics::OpenGL::clear_buffers();
@@ -189,6 +189,7 @@ void MainController::draw() {
 }
 void MainController::update_spotlight(float dt) {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+    // da li je g pritisnuto, i da li nije već pre toga
     if (platform->key(engine::platform::KeyId::KEY_G).state() == engine::platform::Key::State::JustPressed && !spotlight.waitingForRotation && !spotlight.spotlightRotating) {
         spotlight.waitingForRotation = true;
         spotlight.spotlightTimer = 0.0f;

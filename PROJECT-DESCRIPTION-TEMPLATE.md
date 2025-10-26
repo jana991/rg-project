@@ -1,7 +1,8 @@
-# {NAME-OF-THE-PROJECT}
+# Lighthouse in the sea
 
-{INDEX} - {STUDENT-FULL-NAME}  
-{PROJECT DESCRIPTION}
+58/2020 - Jana Radivojević
+Scene of a boat passing by a lone lighthouse in the sea, when the key G is pressed,
+lighthouse light will start rotating, after a few seconds the boat starts moving and the lightouse light turns red
 
 ## Controls
 
@@ -18,7 +19,7 @@ K -> Toggle GUI
 ### Fundamental:
 
 [X] Model with lighting
-[ ] Two types of lighting with customizable colors and movement through GUI or ACTIONS
+[X] Two types of lighting with customizable colors and movement through GUI or ACTIONS
 [X] {PRESS G} --- AFTER 2 SECONDS---Triggers---> {SPOTLIGHT ROTATING} ---> AFTER 4 SECONDS---Triggers---> {SPOTLIGHT COLOR TURNING TO RED AND THE BOAT STARTS MOVING}
 
 ### Group A:
