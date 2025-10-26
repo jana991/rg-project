@@ -5,18 +5,21 @@
 
 ## Controls
 
-{BUTTON1} -> {ACTION1}  
-{BUTTON2} -> {ACTION2}  
-...  
-{BUTTONN} -> {ACTIONN}
+W -> Camera forwards
+S -> Camera backwards
+A -> Camera left
+D -> Camera right
+G -> Activate light event chain
+K -> Toggle GUI
+
 
 ## Features
 
 ### Fundamental:
 
-[ ] Model with lighting
+[X] Model with lighting
 [ ] Two types of lighting with customizable colors and movement through GUI or ACTIONS
-[ ] {ACTION_X} --- AFTER_M_SECONDS---Triggers---> {EVENT_A} ---> AFTER_N_SECONDS---Triggers---> {EVENT_B}
+[X] {PRESS G} --- AFTER 2 SECONDS---Triggers---> {SPOTLIGHT ROTATING} ---> AFTER 4 SECONDS---Triggers---> {SPOTLIGHT COLOR TURNING TO RED AND THE BOAT STARTS MOVING}
 
 ### Group A:
 
