@@ -8,7 +8,7 @@
 
 namespace app {
 
-class GUIController:public engine::core::Controller {
+class GUIController : public engine::core::Controller {
 public:
     std::string_view name() const override {
         return "app::GUIController";
@@ -20,6 +20,6 @@ private:
     void poll_events() override;
 };
 
-} // app
+}// namespace app
 
-#endif //GUICONTROLLER_H
+#endif//GUICONTROLLER_H

@@ -9,7 +9,7 @@
 namespace app {
 
 
-class MainController: public engine::core::Controller {
+class MainController : public engine::core::Controller {
     void initialize() override;
     bool loop() override;
     void draw_lighthouse();
@@ -29,22 +29,21 @@ class MainController: public engine::core::Controller {
     void end_draw() override;
 
 
-
 public:
     std::string_view name() const override {
         return "app::MainController";
     }
 
-struct SpotLight {
-    bool spotlightRotating = false;
-   bool waitingForRotation = false;
-     float spotlightTimer = 0.0f;
-     float angle = 0.0f;
-     bool spotlightRed = false; // da pratimo da li je svetlo već postalo crveno
-};
+    struct SpotLight {
+        bool spotlightRotating = false;
+        bool waitingForRotation = false;
+        float spotlightTimer = 0.0f;
+        float angle = 0.0f;
+        bool spotlightRed = false;// da pratimo da li je svetlo već postalo crveno
+    };
     struct Boat {
-         bool shipMoving = false;
-         glm::vec3 boatPos=glm::vec3(1.0f,-1.0f,-7.0f);
+        bool shipMoving = false;
+        glm::vec3 boatPos = glm::vec3(1.0f, -1.0f, -7.0f);
     };
     SpotLight spotlight;
     Boat boat;
@@ -64,8 +63,7 @@ struct SpotLight {
     float dirLightAmbientIntensity = 0.05f;
     float dirLightDiffuseIntensity = 0.4f;
     float dirLightSpecularIntensity = 0.5f;
-
 };
-}// app
+}// namespace app
 
-#endif //MAINCONTROLLER_H
+#endif//MAINCONTROLLER_H

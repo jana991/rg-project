@@ -19,13 +19,12 @@ public:
     void on_mouse_move(engine::platform::MousePosition position) override;
 };
 void MainPlatformEventObserver::on_mouse_move(engine::platform::MousePosition position) {
-    auto gui_controller=engine::core::Controller::get<GUIController>();
-    if(!gui_controller->is_enabled()) {
+    auto gui_controller = engine::core::Controller::get<GUIController>();
+    if (!gui_controller->is_enabled()) {
         auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
         camera->rotate_camera(position.dx, position.dy);
     }
 }
-
 
 
 void MainController::initialize() {
@@ -33,7 +32,6 @@ void MainController::initialize() {
     platform->register_platform_event_observer(std::make_unique<MainPlatformEventObserver>());
     engine::graphics::OpenGL::enable_depth_testing();
 }
-
 
 
 bool MainController::loop() {
@@ -61,7 +59,7 @@ void MainController::draw_lighthouse() {
 
 
     glm::vec3 lighthousePos = glm::vec3(0.0f, -0.5f, -3.0f);
-    glm::vec3 spotlightPos = lighthousePos + glm::vec3(0.0f, 4.5f, 0.0f); // na vrhu svetionika
+    glm::vec3 spotlightPos = lighthousePos + glm::vec3(0.0f, 4.5f, 0.0f);// na vrhu svetionika
 
     // Setup spotlight
     shader->set_vec3("spotLight.position", spotlightPos);
@@ -106,12 +104,10 @@ void MainController::draw_lighthouse() {
     shader->set_int("material.specular", 1);
     shader->set_float("material.shininess", 32.0f);
     lighthouse->draw(shader);
-
-
 }
 void MainController::update_camera() {
-    auto gui_controller=engine::core::Controller::get<GUIController>();
-    if(gui_controller->is_enabled()) {
+    auto gui_controller = engine::core::Controller::get<GUIController>();
+    if (gui_controller->is_enabled()) {
         return;
     }
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
@@ -139,11 +135,6 @@ void MainController::update() {
     float dt = platform->dt();
     update_spotlight(dt);
     // da li je g pritisnuto, i da li nije već pre toga
-
-
-
-
-
 }
 void MainController::begin_draw() {
     engine::graphics::OpenGL::clear_buffers();
@@ -182,7 +173,7 @@ void MainController::draw_boat() {
     shader->set_mat4("view", graphics->camera()->view_matrix());
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model,boat.boatPos);
+    model = glm::translate(model, boat.boatPos);
     model = glm::scale(model, glm::vec3(0.07f));
     shader->set_mat4("model", model);
 
@@ -198,7 +189,7 @@ void MainController::draw() {
 }
 void MainController::update_spotlight(float dt) {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
-    if (platform->key(engine::platform::KeyId::KEY_G).state()==engine::platform::Key::State::JustPressed && !spotlight.waitingForRotation && !spotlight.spotlightRotating) {
+    if (platform->key(engine::platform::KeyId::KEY_G).state() == engine::platform::Key::State::JustPressed && !spotlight.waitingForRotation && !spotlight.spotlightRotating) {
         spotlight.waitingForRotation = true;
         spotlight.spotlightTimer = 0.0f;
         spdlog::info("Key G pressed, initialize event A");
@@ -217,12 +208,12 @@ void MainController::update_spotlight(float dt) {
         spotlight.spotlightTimer += dt;
 
 
-        spotlight.angle += 0.5f * dt; // rad/s
+        spotlight.angle += 0.5f * dt;// rad/s
 
         // Event B: 4 sekunde nakon početka rotacije svetlo postaje crveno
         if (spotlight.spotlightTimer >= 6.0f && !spotlight.spotlightRed) {
             spotlight.spotlightRed = true;
-            boat.shipMoving=true;
+            boat.shipMoving = true;
             spdlog::info("event B: Spotlight changed to red");
         }
     }
@@ -230,10 +221,10 @@ void MainController::update_spotlight(float dt) {
 }
 void MainController::update_boat(float dt) {
     if (boat.shipMoving) {
-        boat.boatPos.x += 0.2f * dt;  // polako napred
+        boat.boatPos.x += 0.2f * dt;// polako napred
         spotlight.spotlightTimer += dt;
-        if(spotlight.spotlightTimer>=30.0f) {
-            boat.shipMoving=false;
+        if (spotlight.spotlightTimer >= 30.0f) {
+            boat.shipMoving = false;
         }
     }
 }
