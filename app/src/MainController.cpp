@@ -43,10 +43,17 @@ bool MainController::loop() {
     }
     return true;
 }
+// za svetionik
 static bool spotlightRotating = false;
 static bool waitingForRotation = false;
 static float spotlightTimer = 0.0f;
 static float angle = 0.0f;
+// za brod
+static bool boatMoving = false;
+static float eventBTimer = 0.0f;
+static float boatAngle = 0.0f;
+static float boatRadius = 3.0f;
+static glm::vec3 boatCenter = glm::vec3(0.0f, -1.0f, -3.0f);
 void MainController::draw_lighthouse() {
 
     auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
@@ -154,6 +161,15 @@ void MainController::update() {
             spdlog::info("event A: Spotlight rotation started");
         }
     }
+    // drugi event za brod
+    if (spotlightRotating && !boatMoving) {
+        eventBTimer += dt;
+        if (eventBTimer >= 4.0f) {
+            boatMoving = true;
+            spdlog::info("event B: Boat circulating started");
+        }
+    }
+
 }
 void MainController::begin_draw() {
     engine::graphics::OpenGL::clear_buffers();
@@ -183,6 +199,7 @@ void MainController::draw_water() {
 void MainController::draw_boat() {
     auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
     auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+    auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     engine::resources::Model *boat = resources->model("boat");
     //shader
     engine::resources::Shader *shader = resources->shader("basic");
@@ -190,7 +207,16 @@ void MainController::draw_boat() {
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(1.0f, -1.0f, -7.0f));
+
+
+    if (boatMoving) {
+        boatAngle += 0.4f * platform->dt(); // brzina kretanja
+    }
+
+    float boatX = boatCenter.x + boatRadius * sin(boatAngle);
+    float boatZ = boatCenter.z + boatRadius * cos(boatAngle);
+
+    model = glm::translate(model, glm::vec3(boatX, boatCenter.y, boatZ));
     model = glm::scale(model, glm::vec3(0.07f));
     shader->set_mat4("model", model);
     boat->draw(shader);
