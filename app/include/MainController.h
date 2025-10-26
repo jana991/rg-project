@@ -49,6 +49,22 @@ struct SpotLight {
     SpotLight spotlight;
     Boat boat;
 
+    glm::vec3 spotlightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    float spotlightAmbientIntensity = 0.1f;
+    float spotlightDiffuseIntensity = 4.0f;
+    float spotlightSpecularIntensity = 2.0f;
+    float spotlightCutOffDeg = 6.0f;
+    float spotlightOuterCutOffDeg = 10.0f;
+    float spotlightConstant = 1.0f;
+    float spotlightLinear = 0.09f;
+    float spotlightQuadratic = 0.032f;
+
+
+    glm::vec3 dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    float dirLightAmbientIntensity = 0.05f;
+    float dirLightDiffuseIntensity = 0.4f;
+    float dirLightSpecularIntensity = 0.5f;
+
 };
 }// app
 

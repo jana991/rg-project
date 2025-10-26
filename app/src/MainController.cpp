@@ -63,45 +63,39 @@ void MainController::draw_lighthouse() {
     glm::vec3 lighthousePos = glm::vec3(0.0f, -0.5f, -3.0f);
     glm::vec3 spotlightPos = lighthousePos + glm::vec3(0.0f, 4.5f, 0.0f); // na vrhu svetionika
 
-
+    // Setup spotlight
     shader->set_vec3("spotLight.position", spotlightPos);
 
-    glm::vec3 spotlightDir;
-
-// pozicije da li su dobre
+    glm::vec3 spotlightDirection;
     if (spotlight.spotlightRotating) {
-        spotlight.angle += 0.5f * platform->dt();
-        spotlightDir = glm::normalize(glm::vec3(sin(spotlight.angle), -1.0f, cos(spotlight.angle)));
+        spotlightDirection = glm::normalize(glm::vec3(sin(spotlight.angle), -1.0f, cos(spotlight.angle)));
     } else {
-
-        spotlightDir = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
+        spotlightDirection = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
     }
+    shader->set_vec3("spotLight.direction", spotlightDirection);
 
-    shader->set_vec3("spotLight.direction", spotlightDir);
-    shader->set_float("spotLight.cutOff", glm::cos(glm::radians(6.0f)));
-    shader->set_float("spotLight.outerCutOff", glm::cos(glm::radians(10.0f)));
+    shader->set_float("spotLight.cutOff", glm::cos(glm::radians(spotlightCutOffDeg)));
+    shader->set_float("spotLight.outerCutOff", glm::cos(glm::radians(spotlightOuterCutOffDeg)));
 
-    shader->set_float("spotLight.constant", 1.0f);
-    shader->set_float("spotLight.linear", 0.09f);
-    shader->set_float("spotLight.quadratic", 0.032f);
+    shader->set_float("spotLight.constant", spotlightConstant);
+    shader->set_float("spotLight.linear", spotlightLinear);
+    shader->set_float("spotLight.quadratic", spotlightQuadratic);
 
-    shader->set_vec3("spotLight.ambient", glm::vec3(0.1f));
-    if (spotlight.spotlightRed) {
-        shader->set_vec3("spotLight.diffuse", glm::vec3(10.0f, 0.0f, 0.0f));
-        shader->set_vec3("spotLight.specular", glm::vec3(5.0f, 0.0f, 0.0f));
-    } else {
-        shader->set_vec3("spotLight.diffuse", glm::vec3(4.0f));
-        shader->set_vec3("spotLight.specular", glm::vec3(2.0f));
-    }
+    // ambient/diffuse/specular: po defaultu koristimo spotlightColor * intensity
+    glm::vec3 effectiveColor = spotlight.spotlightRed ? glm::vec3(1.0f, 0.0f, 0.0f) : spotlightColor;
 
+    shader->set_vec3("spotLight.ambient", effectiveColor * spotlightAmbientIntensity);
+    shader->set_vec3("spotLight.diffuse", effectiveColor * spotlightDiffuseIntensity);
+    shader->set_vec3("spotLight.specular", effectiveColor * spotlightSpecularIntensity);
 
 
     shader->set_float("material.shininess", 32.0f);
     glm::vec3 dirLightDirection = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f));
     shader->set_vec3("dirLight.direction", dirLightDirection);
-    shader->set_vec3("dirLight.ambient", glm::vec3(0.05f));
-    shader->set_vec3("dirLight.diffuse", glm::vec3(0.4f));
-    shader->set_vec3("dirLight.specular", glm::vec3(0.5f));
+    shader->set_vec3("dirLight.ambient", dirLightColor * dirLightAmbientIntensity);
+    shader->set_vec3("dirLight.diffuse", dirLightColor * dirLightDiffuseIntensity);
+    shader->set_vec3("dirLight.specular", dirLightColor * dirLightSpecularIntensity);
+
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
     glm::mat4 model = glm::mat4(1.0f);
