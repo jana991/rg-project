@@ -14,6 +14,7 @@
 #include <engine/platform/PlatformController.hpp>
 #include <engine/resources/ResourcesController.hpp>
 #include <../../engine/libs/glad/include/glad/glad.h>
+#include <../../engine/libs/glfw/include/GLFW/glfw3.h>
 namespace app {
 class MainPlatformEventObserver : public engine::platform::PlatformEventObserver {
 public:
@@ -32,6 +33,10 @@ void MainController::initialize() {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     platform->register_platform_event_observer(std::make_unique<MainPlatformEventObserver>());
     engine::graphics::OpenGL::enable_depth_testing();
+    GLint vp[4];
+    glGetIntegerv(GL_VIEWPORT, vp);
+    int fbWidth  = std::max(vp[2], 1280);
+    int fbHeight = std::max(vp[3], 720);
     create_msaa_and_resolve_fbos(fbWidth, fbHeight, msaaSamples);
     glEnable(GL_MULTISAMPLE);
 }
@@ -310,10 +315,10 @@ void MainController::create_msaa_and_resolve_fbos(int width, int height, int sam
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resolveTex, 0);
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        spdlog::error("Resolve FBO not complete!");
-    }
 
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        spdlog::error("Resolve not complete");
+    }
     // unbind
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
