@@ -26,7 +26,7 @@ When the key K is pressed, you can toggle GUI, in which you can change the setti
 
 [ ] Frame-buffers with post-processing   
 [ ] Instancing  
-[ ] Off-screen Anti-Aliasing  
+[X] Off-screen Anti-Aliasing  
 [ ] Parallax Mapping
 
 ### Group B:
@@ -34,3 +34,10 @@ When the key K is pressed, you can toggle GUI, in which you can change the setti
 [ ] Deferred Shading  
 [ ] Point Shadows  
 [ ] SSAO
+
+### Models:
+water: https://drive.google.com/drive/folders/18OuuzTndMOkFzayWbjXXKeuDmGeZlMkj \
+lighthouse: https://drive.google.com/drive/folders/1KLdVtsIIAvU0oNNke1f__am0iCsIecGP \
+boat: https://drive.google.com/drive/folders/1Pw5BDJIU7fkMMjoQrMj1WitVGj05iha8
+### Skybox textures
+skybox: https://drive.google.com/drive/folders/1oDj8A71fcjTI6QZ4lzc19y-ZW785KDys
