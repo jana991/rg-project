@@ -5,6 +5,8 @@
 #include "../include/GUIController.h"
 
 #include "../include/MainController.h"
+#include "spdlog/spdlog.h"
+
 #include <engine/core/Controller.hpp>
 #include <engine/graphics/GraphicsController.hpp>
 #include <engine/platform/PlatformController.hpp>
@@ -26,40 +28,41 @@ void GUIController::draw() {
     ImGui::Begin("Light Controls");
     ImGui::Text("Spotlight settings");
     ImGui::Separator();
-    ImGui::ColorEdit3("Spotlight Color", (float *) &main->spotlightColor);// 0..1
-    ImGui::SliderFloat("Spot Ambient", &main->spotlightAmbientIntensity, 0.0f, 2.0f, "%.3f");
-    ImGui::SliderFloat("Spot Diffuse", &main->spotlightDiffuseIntensity, 0.0f, 10.0f, "%.3f");
-    ImGui::SliderFloat("Spot Specular", &main->spotlightSpecularIntensity, 0.0f, 10.0f, "%.3f");
-    ImGui::SliderFloat("Inner Cutoff (deg)", &main->spotlightCutOffDeg, 1.0f, 45.0f, "%.1f");
-    ImGui::SliderFloat("Outer Cutoff (deg)", &main->spotlightOuterCutOffDeg, 1.0f, 60.0f, "%.1f");
-    ImGui::SliderFloat("Spot Constant", &main->spotlightConstant, 0.0f, 2.0f, "%.3f");
-    ImGui::SliderFloat("Spot Linear", &main->spotlightLinear, 0.0f, 1.0f, "%.4f");
-    ImGui::SliderFloat("Spot Quadratic", &main->spotlightQuadratic, 0.0f, 0.1f, "%.5f");
+    ImGui::ColorEdit3("Spotlight Color", (float *) &main->spotlight_color);// 0..1
+    ImGui::SliderFloat("Spot Ambient", &main->spotlight_ambient_intensity, 0.0f, 2.0f, "%.3f");
+    ImGui::SliderFloat("Spot Diffuse", &main->spotlight_diffuse_intensity, 0.0f, 10.0f, "%.3f");
+    ImGui::SliderFloat("Spot Specular", &main->spotlight_specular_intensity, 0.0f, 10.0f, "%.3f");
+    ImGui::SliderFloat("Inner Cutoff (deg)", &main->spotlight_cut_off_deg, 1.0f, 45.0f, "%.1f");
+    ImGui::SliderFloat("Outer Cutoff (deg)", &main->spotlight_outer_cut_off_deg, 1.0f, 60.0f, "%.1f");
+    ImGui::SliderFloat("Spot Constant", &main->spotlight_constant, 0.0f, 2.0f, "%.3f");
+    ImGui::SliderFloat("Spot Linear", &main->spotlight_linear, 0.0f, 1.0f, "%.4f");
+    ImGui::SliderFloat("Spot Quadratic", &main->spotlight_quadratic, 0.0f, 0.1f, "%.5f");
 
     ImGui::Separator();
     ImGui::Text("Directional Light");
-    ImGui::ColorEdit3("DirLight Color", (float *) &main->dirLightColor);
-    ImGui::SliderFloat("Dir Ambient", &main->dirLightAmbientIntensity, 0.0f, 1.0f, "%.3f");
-    ImGui::SliderFloat("Dir Diffuse", &main->dirLightDiffuseIntensity, 0.0f, 2.0f, "%.3f");
-    ImGui::SliderFloat("Dir Specular", &main->dirLightSpecularIntensity, 0.0f, 2.0f, "%.3f");
+    ImGui::ColorEdit3("DirLight Color", (float *) &main->dir_light_color);
+    ImGui::SliderFloat("Dir Ambient", &main->dir_light_ambient_intensity, 0.0f, 1.0f, "%.3f");
+    ImGui::SliderFloat("Dir Diffuse", &main->dir_light_diffuse_intensity, 0.0f, 2.0f, "%.3f");
+    ImGui::SliderFloat("Dir Specular", &main->dir_light_specular_intensity, 0.0f, 2.0f, "%.3f");
     ImGui::Separator();
     if (ImGui::Button("Reset Spotlight Params")) {
-        main->spotlightColor = glm::vec3(1.0f);
-        main->spotlightAmbientIntensity = 0.1f;
-        main->spotlightDiffuseIntensity = 4.0f;
-        main->spotlightSpecularIntensity = 2.0f;
-        main->spotlightCutOffDeg = 6.0f;
-        main->spotlightOuterCutOffDeg = 10.0f;
-        main->spotlightConstant = 1.0f;
-        main->spotlightLinear = 0.09f;
-        main->spotlightQuadratic = 0.032f;
+        main->spotlight_color = glm::vec3(1.0f);
+        main->spotlight_ambient_intensity = 0.1f;
+        main->spotlight_diffuse_intensity = 4.0f;
+        main->spotlight_specular_intensity = 2.0f;
+        main->spotlight_cut_off_deg = 6.0f;
+        main->spotlight_outer_cut_off_deg = 10.0f;
+        main->spotlight_constant = 1.0f;
+        main->spotlight_linear = 0.09f;
+        main->spotlight_quadratic = 0.032f;
     }
+
     ImGui::SameLine();
     if (ImGui::Button("Reset DirLight")) {
-        main->dirLightColor = glm::vec3(1.0f);
-        main->dirLightAmbientIntensity = 0.05f;
-        main->dirLightDiffuseIntensity = 0.4f;
-        main->dirLightSpecularIntensity = 0.5f;
+        main->dir_light_color = glm::vec3(1.0f);
+        main->dir_light_ambient_intensity = 0.05f;
+        main->dir_light_diffuse_intensity = 0.4f;
+        main->dir_light_specular_intensity = 0.5f;
     }
     ImGui::End();
 

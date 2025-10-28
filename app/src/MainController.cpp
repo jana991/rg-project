@@ -33,11 +33,9 @@ void MainController::initialize() {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     platform->register_platform_event_observer(std::make_unique<MainPlatformEventObserver>());
     engine::graphics::OpenGL::enable_depth_testing();
-    GLint vp[4];
-    glGetIntegerv(GL_VIEWPORT, vp);
-    int fbWidth  = std::max(vp[2], 1280);
-    int fbHeight = std::max(vp[3], 720);
-    create_msaa_and_resolve_fbos(fbWidth, fbHeight, msaaSamples);
+    int fbWidth  = platform->window()->width();
+    int fbHeight = platform->window()->height();
+    create_msaa_and_resolve_fbos(fbWidth, fbHeight, msaa_samples);
     glEnable(GL_MULTISAMPLE);
 }
 
@@ -73,34 +71,40 @@ void MainController::draw_lighthouse() {
     shader->set_vec3("spotLight.position", spotlightPos);
 
     glm::vec3 spotlightDirection;
-    if (spotlight.spotlightRotating) {
+    if (spotlight.spotlight_rotating) {
         spotlightDirection = glm::normalize(glm::vec3(sin(spotlight.angle), -1.0f, cos(spotlight.angle)));
     } else {
         spotlightDirection = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
     }
     shader->set_vec3("spotLight.direction", spotlightDirection);
 
-    shader->set_float("spotLight.cutOff", glm::cos(glm::radians(spotlightCutOffDeg)));
-    shader->set_float("spotLight.outerCutOff", glm::cos(glm::radians(spotlightOuterCutOffDeg)));
+    shader->set_float("spotLight.cutOff", glm::cos(glm::radians(spotlight_cut_off_deg)));
+    shader->set_float("spotLight.outerCutOff", glm::cos(glm::radians(spotlight_outer_cut_off_deg)));
 
-    shader->set_float("spotLight.constant", spotlightConstant);
-    shader->set_float("spotLight.linear", spotlightLinear);
-    shader->set_float("spotLight.quadratic", spotlightQuadratic);
+    shader->set_float("spotLight.constant", spotlight_constant);
+    shader->set_float("spotLight.linear", spotlight_linear);
+    shader->set_float("spotLight.quadratic", spotlight_quadratic);
 
-    // ambient/diffuse/specular: po defaultu koristimo spotlightColor * intensity
-    glm::vec3 effectiveColor = spotlight.spotlightRed ? glm::vec3(1.0f, 0.0f, 0.0f) : spotlightColor;
+    glm::vec3 effective_color;
 
-    shader->set_vec3("spotLight.ambient", effectiveColor * spotlightAmbientIntensity);
-    shader->set_vec3("spotLight.diffuse", effectiveColor * spotlightDiffuseIntensity);
-    shader->set_vec3("spotLight.specular", effectiveColor * spotlightSpecularIntensity);
+    if (spotlight.spotlight_red) {
+        effective_color = glm::vec3(1.0f, 0.0f, 0.0f);
+    } else {
+        effective_color = spotlight_color;
+    }
+
+
+    shader->set_vec3("spotLight.ambient", effective_color * spotlight_ambient_intensity);
+    shader->set_vec3("spotLight.diffuse", effective_color * spotlight_diffuse_intensity);
+    shader->set_vec3("spotLight.specular", effective_color * spotlight_specular_intensity);
 
 
     shader->set_float("material.shininess", 32.0f);
     glm::vec3 dirLightDirection = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f));
     shader->set_vec3("dirLight.direction", dirLightDirection);
-    shader->set_vec3("dirLight.ambient", dirLightColor * dirLightAmbientIntensity);
-    shader->set_vec3("dirLight.diffuse", dirLightColor * dirLightDiffuseIntensity);
-    shader->set_vec3("dirLight.specular", dirLightColor * dirLightSpecularIntensity);
+    shader->set_vec3("dirLight.ambient", dir_light_color * dir_light_ambient_intensity);
+    shader->set_vec3("dirLight.diffuse", dir_light_color * dir_light_diffuse_intensity);
+    shader->set_vec3("dirLight.specular", dir_light_color * dir_light_specular_intensity);
 
     shader->set_mat4("projection", graphics->projection_matrix());
     shader->set_mat4("view", graphics->camera()->view_matrix());
@@ -136,7 +140,6 @@ void MainController::update_camera() {
     }
 }
 void MainController::update() {
-
     update_camera();
 
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
@@ -146,12 +149,12 @@ void MainController::update() {
 }
 void MainController::begin_draw() {
 
-    if (msFBO) {
-        glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+    if (ms_fbo) {
+        glBindFramebuffer(GL_FRAMEBUFFER, ms_fbo);
     } else {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    glViewport(0, 0, fbWidth, fbHeight);
+    glViewport(0, 0, fb_width, fb_height);
 
     engine::graphics::OpenGL::clear_buffers();
 }
@@ -189,7 +192,7 @@ void MainController::draw_boat() {
     shader->set_mat4("view", graphics->camera()->view_matrix());
 
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, boat.boatPos);
+    model = glm::translate(model, boat.boat_pos);
     model = glm::scale(model, glm::vec3(0.07f));
     shader->set_mat4("model", model);
 
@@ -208,112 +211,112 @@ void MainController::draw() {
 void MainController::update_spotlight(float dt) {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     // da li je g pritisnuto, i da li nije već pre toga
-    if (platform->key(engine::platform::KeyId::KEY_G).state() == engine::platform::Key::State::JustPressed && !spotlight.waitingForRotation && !spotlight.spotlightRotating) {
-        spotlight.waitingForRotation = true;
-        spotlight.spotlightTimer = 0.0f;
+    if (platform->key(engine::platform::KeyId::KEY_G).state() == engine::platform::Key::State::JustPressed && !spotlight.waiting_for_rotation && !spotlight.spotlight_rotating) {
+        spotlight.waiting_for_rotation = true;
+        spotlight.spotlight_timer = 0.0f;
         spdlog::info("Key G pressed, initialize event A");
     }
 
     // čeka dve sekunde pa rotira
-    if (spotlight.waitingForRotation) {
-        spotlight.spotlightTimer += dt;
-        if (spotlight.spotlightTimer >= 2.0f) {
-            spotlight.waitingForRotation = false;
-            spotlight.spotlightRotating = true;
+    if (spotlight.waiting_for_rotation) {
+        spotlight.spotlight_timer += dt;
+        if (spotlight.spotlight_timer >= 2.0f) {
+            spotlight.waiting_for_rotation = false;
+            spotlight.spotlight_rotating = true;
             spdlog::info("event A: Spotlight rotation started");
         }
     }
-    if (spotlight.spotlightRotating) {
-        spotlight.spotlightTimer += dt;
+    if (spotlight.spotlight_rotating) {
+        spotlight.spotlight_timer += dt;
 
 
         spotlight.angle += 0.5f * dt;// rad/s
 
         // Event B: 4 sekunde nakon početka rotacije svetlo postaje crveno
-        if (spotlight.spotlightTimer >= 6.0f && !spotlight.spotlightRed) {
-            spotlight.spotlightRed = true;
-            boat.shipMoving = true;
+        if (spotlight.spotlight_timer >= 6.0f && !spotlight.spotlight_red) {
+            spotlight.spotlight_red = true;
+            boat.ship_moving = true;
             spdlog::info("event B: Spotlight changed to red");
         }
     }
     update_boat(dt);
 }
 void MainController::update_boat(float dt) {
-    if (boat.shipMoving) {
-        boat.boatPos.x += 0.2f * dt;// polako napred
-        spotlight.spotlightTimer += dt;
-        if (spotlight.spotlightTimer >= 30.0f) {
-            boat.shipMoving = false;
+    if (boat.ship_moving) {
+        boat.boat_pos.x += 0.2f * dt;// polako napred
+        spotlight.spotlight_timer += dt;
+        if (spotlight.spotlight_timer >= 30.0f) {
+            boat.ship_moving = false;
         }
     }
 }
 
 void MainController::end_draw() {
 
-    if (msFBO && resolveFBO) {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolveFBO);
-        glBlitFramebuffer(0, 0, fbWidth, fbHeight, 0, 0, fbWidth, fbHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    if (ms_fbo && resolve_fbo) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, ms_fbo);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolve_fbo);
+        glBlitFramebuffer(0, 0, fb_width, fb_height, 0, 0, fb_width, fb_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    if (resolveFBO) {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, resolveFBO);
+    if (resolve_fbo) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, resolve_fbo);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glBlitFramebuffer(0, 0, fbWidth, fbHeight, 0, 0, fbWidth, fbHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBlitFramebuffer(0, 0, fb_width, fb_height, 0, 0, fb_width, fb_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     platform->swap_buffers();
 }
 void MainController::create_msaa_and_resolve_fbos(int width, int height, int samples) {
-    fbWidth = width;
-    fbHeight = height;
-    msaaSamples = samples;
+    fb_width = width;
+    fb_height = height;
+    msaa_samples = samples;
 
     // delete old resources if postoje
-    if (msFBO) {
-        glDeleteFramebuffers(1, &msFBO);
-        glDeleteTextures(1, &msColorTex);
-        glDeleteRenderbuffers(1, &msDepthRBO);
-        msFBO = msColorTex = msDepthRBO = 0;
+    if (ms_fbo) {
+        glDeleteFramebuffers(1, &ms_fbo);
+        glDeleteTextures(1, &ms_color_tex);
+        glDeleteRenderbuffers(1, &ms_depth_rbo);
+        ms_fbo = ms_color_tex = ms_depth_rbo = 0;
     }
-    if (resolveFBO) {
-        glDeleteFramebuffers(1, &resolveFBO);
-        glDeleteTextures(1, &resolveTex);
-        resolveFBO = resolveTex = 0;
+    if (resolve_fbo) {
+        glDeleteFramebuffers(1, &resolve_fbo);
+        glDeleteTextures(1, &resolve_tex);
+        resolve_fbo = resolve_tex = 0;
     }
 
 
     // frejmbafer
-    glGenFramebuffers(1, &msFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+    glGenFramebuffers(1, &ms_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, ms_fbo);
     //kolor atc
-    glGenTextures(1, &msColorTex);
-    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msColorTex);
+    glGenTextures(1, &ms_color_tex);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, ms_color_tex);
     glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_TRUE);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, msColorTex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, ms_color_tex, 0);
 
     // dept i stensil
-    glGenRenderbuffers(1, &msDepthRBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, msDepthRBO);
+    glGenRenderbuffers(1, &ms_depth_rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, ms_depth_rbo);
     glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msDepthRBO);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ms_depth_rbo);
 //provera frejmbafera
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         spdlog::error("Frame buffer not complete");
     }
 
    //resolve
-    glGenFramebuffers(1, &resolveFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
+    glGenFramebuffers(1, &resolve_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, resolve_fbo);
 
-    glGenTextures(1, &resolveTex);
-    glBindTexture(GL_TEXTURE_2D, resolveTex);
+    glGenTextures(1, &resolve_tex);
+    glBindTexture(GL_TEXTURE_2D, resolve_tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resolveTex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resolve_tex, 0);
 
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -330,11 +333,11 @@ void MainController::create_msaa_and_resolve_fbos(int width, int height, int sam
     glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
     spdlog::info("MSAA create: requested samples={}, GL_MAX_SAMPLES={}", samples, maxSamples);
 }
-void MainController::on_resize(int newW, int newH) {
-    fbWidth = newW;
-    fbHeight = newH;
-    create_msaa_and_resolve_fbos(fbWidth, fbHeight, msaaSamples);
-    glViewport(0, 0, fbWidth, fbHeight);
+void MainController::on_resize(int new_w, int new_h) {
+    fb_width = new_w;
+    fb_height = new_h;
+    create_msaa_and_resolve_fbos(fb_width, fb_height, msaa_samples);
+    glViewport(0, 0, fb_width, fb_height);
 }
 
 
