@@ -13,6 +13,7 @@
 #include <engine/graphics/OpenGL.hpp>
 #include <engine/platform/PlatformController.hpp>
 #include <engine/resources/ResourcesController.hpp>
+#include <../../engine/libs/glad/include/glad/glad.h>
 namespace app {
 class MainPlatformEventObserver : public engine::platform::PlatformEventObserver {
 public:
@@ -31,6 +32,8 @@ void MainController::initialize() {
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     platform->register_platform_event_observer(std::make_unique<MainPlatformEventObserver>());
     engine::graphics::OpenGL::enable_depth_testing();
+    create_msaa_and_resolve_fbos(fbWidth, fbHeight, msaaSamples);
+    glEnable(GL_MULTISAMPLE);
 }
 
 
@@ -137,6 +140,14 @@ void MainController::update() {
 
 }
 void MainController::begin_draw() {
+
+    if (msFBO) {
+        glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+    } else {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+    glViewport(0, 0, fbWidth, fbHeight);
+
     engine::graphics::OpenGL::clear_buffers();
 }
 void MainController::draw_skybox() {
@@ -181,10 +192,12 @@ void MainController::draw_boat() {
 }
 void MainController::draw() {
     //clear buffers (color buffer, depth buffer)
+    begin_draw();
     draw_lighthouse();
     draw_water();
     draw_boat();
     draw_skybox();
+    end_draw();
     //swap buffer
 }
 void MainController::update_spotlight(float dt) {
@@ -231,8 +244,92 @@ void MainController::update_boat(float dt) {
 }
 
 void MainController::end_draw() {
+
+    if (msFBO && resolveFBO) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolveFBO);
+        glBlitFramebuffer(0, 0, fbWidth, fbHeight, 0, 0, fbWidth, fbHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    if (resolveFBO) {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, resolveFBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, fbWidth, fbHeight, 0, 0, fbWidth, fbHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    }
+
     auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
     platform->swap_buffers();
+}
+void MainController::create_msaa_and_resolve_fbos(int width, int height, int samples) {
+    fbWidth = width;
+    fbHeight = height;
+    msaaSamples = samples;
+
+    // delete old resources if postoje
+    if (msFBO) {
+        glDeleteFramebuffers(1, &msFBO);
+        glDeleteTextures(1, &msColorTex);
+        glDeleteRenderbuffers(1, &msDepthRBO);
+        msFBO = msColorTex = msDepthRBO = 0;
+    }
+    if (resolveFBO) {
+        glDeleteFramebuffers(1, &resolveFBO);
+        glDeleteTextures(1, &resolveTex);
+        resolveFBO = resolveTex = 0;
+    }
+
+
+    // frejmbafer
+    glGenFramebuffers(1, &msFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+    //kolor atc
+    glGenTextures(1, &msColorTex);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msColorTex);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_TRUE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, msColorTex, 0);
+
+    // dept i stensil
+    glGenRenderbuffers(1, &msDepthRBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, msDepthRBO);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msDepthRBO);
+//provera frejmbafera
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        spdlog::error("Frame buffer not complete");
+    }
+
+   //resolve
+    glGenFramebuffers(1, &resolveFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, resolveFBO);
+
+    glGenTextures(1, &resolveTex);
+    glBindTexture(GL_TEXTURE_2D, resolveTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resolveTex, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        spdlog::error("Resolve FBO not complete!");
+    }
+
+    // unbind
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    // debug: koliko uzoraka podrzava GPU
+    GLint maxSamples = 0;
+    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+    spdlog::info("MSAA create: requested samples={}, GL_MAX_SAMPLES={}", samples, maxSamples);
+}
+void MainController::on_resize(int newW, int newH) {
+    fbWidth = newW;
+    fbHeight = newH;
+    create_msaa_and_resolve_fbos(fbWidth, fbHeight, msaaSamples);
+    glViewport(0, 0, fbWidth, fbHeight);
 }
 
 

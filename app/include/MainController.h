@@ -63,6 +63,24 @@ public:
     float dirLightAmbientIntensity = 0.05f;
     float dirLightDiffuseIntensity = 0.4f;
     float dirLightSpecularIntensity = 0.5f;
+
+    //antialiasing
+    unsigned int msFBO = 0;
+    unsigned int msColorTex = 0;   // GL_TEXTURE_2D_MULTISAMPLE
+    unsigned int msDepthRBO = 0;
+
+    unsigned int resolveFBO = 0;
+    unsigned int resolveTex = 0;   // single-sample color texture
+
+    int msaaSamples = 4;
+    int fbWidth = 1280;
+    int fbHeight = 720;
+
+    // Kreira (ili rekreira) msaa + resolve FBO-ove
+    void create_msaa_and_resolve_fbos(int width, int height, int samples = 4);
+
+    // Pozovi ovo iz resize callbacka (ako postoji)
+    void on_resize(int newW, int newH);
 };
 }// namespace app
 
