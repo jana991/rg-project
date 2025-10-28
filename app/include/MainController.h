@@ -35,52 +35,52 @@ public:
     }
 
     struct SpotLight {
-        bool spotlightRotating = false;
-        bool waitingForRotation = false;
-        float spotlightTimer = 0.0f;
+        bool spotlight_rotating = false;
+        bool waiting_for_rotation = false;
+        float spotlight_timer = 0.0f;
         float angle = 0.0f;
-        bool spotlightRed = false;// da pratimo da li je svetlo već postalo crveno
+        bool spotlight_red = false;// da pratimo da li je svetlo već postalo crveno
     };
     struct Boat {
-        bool shipMoving = false;
-        glm::vec3 boatPos = glm::vec3(1.0f, -1.0f, -7.0f);
+        bool ship_moving = false;
+        glm::vec3 boat_pos = glm::vec3(1.0f, -1.0f, -7.0f);
     };
     SpotLight spotlight;
     Boat boat;
 
-    glm::vec3 spotlightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    float spotlightAmbientIntensity = 0.1f;
-    float spotlightDiffuseIntensity = 4.0f;
-    float spotlightSpecularIntensity = 2.0f;
-    float spotlightCutOffDeg = 6.0f;
-    float spotlightOuterCutOffDeg = 10.0f;
-    float spotlightConstant = 1.0f;
-    float spotlightLinear = 0.09f;
-    float spotlightQuadratic = 0.032f;
+    glm::vec3 spotlight_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    float spotlight_ambient_intensity = 0.1f;
+    float spotlight_diffuse_intensity = 4.0f;
+    float spotlight_specular_intensity = 2.0f;
+    float spotlight_cut_off_deg = 6.0f;
+    float spotlight_outer_cut_off_deg = 10.0f;
+    float spotlight_constant = 1.0f;
+    float spotlight_linear = 0.09f;
+    float spotlight_quadratic = 0.032f;
 
 
-    glm::vec3 dirLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    float dirLightAmbientIntensity = 0.05f;
-    float dirLightDiffuseIntensity = 0.4f;
-    float dirLightSpecularIntensity = 0.5f;
+    glm::vec3 dir_light_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    float dir_light_ambient_intensity = 0.05f;
+    float dir_light_diffuse_intensity = 0.4f;
+    float dir_light_specular_intensity = 0.5f;
 
     //antialiasing
-    unsigned int msFBO = 0;
-    unsigned int msColorTex = 0;   // GL_TEXTURE_2D_MULTISAMPLE
-    unsigned int msDepthRBO = 0;
+    unsigned int ms_fbo = 0;
+    unsigned int ms_color_tex = 0;// GL_TEXTURE_2D_MULTISAMPLE
+    unsigned int ms_depth_rbo = 0;
 
-    unsigned int resolveFBO = 0;
-    unsigned int resolveTex = 0;   // single-sample color texture
+    unsigned int resolve_fbo = 0;
+    unsigned int resolve_tex = 0;// single-sample color texture
 
-    int msaaSamples = 4;
-    int fbWidth = 1280;
-    int fbHeight = 720;
+    int msaa_samples = 4;
+    int fb_width = 1280;
+    int fb_height = 720;
 
-    // Kreira (ili rekreira) msaa + resolve FBO-ove
+
     void create_msaa_and_resolve_fbos(int width, int height, int samples = 4);
 
-    // Pozovi ovo iz resize callbacka (ako postoji)
-    void on_resize(int newW, int newH);
+
+    void on_resize(int new_w, int new_h);
 };
 }// namespace app
 
