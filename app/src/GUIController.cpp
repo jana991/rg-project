@@ -2,9 +2,9 @@
 // Created by matfrg on 10/25/25.
 //
 
-#include "../include/GUIController.h"
+#include "GUIController.h"
 
-#include "../include/MainController.h"
+#include "MainController.h"
 #include "spdlog/spdlog.h"
 
 #include <engine/core/Controller.hpp>

@@ -2,9 +2,9 @@
 // Created by matfrg on 10/15/25.
 //
 
-#include "../include/MyApp.h"
+#include "MyApp.h"
 
-#include "../../engine/libs/spdlog/include/spdlog/spdlog.h"
+#include "spdlog/spdlog.h"
 #include "GUIController.h"
 #include "MainController.h"
 
