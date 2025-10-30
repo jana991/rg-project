@@ -5,8 +5,11 @@
 
 #ifndef OPENGL_HPP
 #define OPENGL_HPP
+#pragma once
+
 
 #include <cstdint>
+
 #include <filesystem>
 #include <engine/resources/Shader.hpp>
 
@@ -139,6 +142,41 @@ public:
     * @param shader_id Shader id for which the compilation failed.
     * @returns shader compilation error message.
     */
+
+    static void enable_multisample();
+
+    static void bind_framebuffer(uint32_t fbo, uint32_t target = 0);
+
+    static void set_viewport(int x, int y, int width, int height);
+
+    static uint32_t create_multisample_texture(int width, int height, int samples);
+
+    static uint32_t create_multisample_rbo(int width, int height, int samples);
+
+    static uint32_t create_texture(int width, int height);
+
+    static void blit_framebuffer(uint32_t read_fbo, uint32_t draw_fbo, int width, int height);
+
+    static void delete_framebuffers(uint32_t count, const uint32_t* framebuffers);
+
+    static void delete_textures(uint32_t count, const uint32_t* textures);
+
+    static void delete_renderbuffers(uint32_t count, const uint32_t* renderbuffers);
+
+    static uint32_t create_framebuffer();
+
+
+    static void attach_texture_to_framebuffer(uint32_t fbo, uint32_t texture, int attachment_index = 0, bool multisample = false);
+
+
+    static void attach_renderbuffer_to_framebuffer(uint32_t fbo, uint32_t rbo);
+
+
+    static bool is_framebuffer_complete(uint32_t fbo);
+
+
+    static int max_samples();
+
     static std::string get_compilation_error_message(uint32_t shader_id);
 
 private:

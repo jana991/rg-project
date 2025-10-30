@@ -1,11 +1,23 @@
 {
   "resources": {
     "models": {
+      "lighthouse": {
+        "path": "Lighthouse/Lighthouse.obj"
+
+      },
+      "boat": {
+        "path": "boat2/boat.obj",
+        "flip_uvs": true
+
+      },
+      "ocean": {
+        "path": "water1/oceanfinal.obj"
+      }
     }
   },
   "window": {
-    "height": 600,
-    "title": "Hello, window!",
-    "width": 800
+    "height": 1200,
+    "title": "Lighthouse on an island",
+    "width": 1600
   }
 }

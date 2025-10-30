@@ -181,6 +181,97 @@ void OpenGL::disable_depth_testing() {
 void OpenGL::clear_buffers() {
     CHECKED_GL_CALL(glClear, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
+void engine::graphics::OpenGL::enable_multisample() {
+    CHECKED_GL_CALL(glEnable, GL_MULTISAMPLE);
+}
+
+void engine::graphics::OpenGL::bind_framebuffer(uint32_t fbo, uint32_t target) {
+    if(target==0) {
+        target=GL_FRAMEBUFFER;
+
+    }
+    CHECKED_GL_CALL(glBindFramebuffer, target, fbo);
+}
+
+void engine::graphics::OpenGL::set_viewport(int x, int y, int width, int height) {
+    CHECKED_GL_CALL(glViewport, x, y, width, height);
+}
+
+uint32_t engine::graphics::OpenGL::create_multisample_texture(int width, int height, int samples) {
+    uint32_t texture_id;
+    CHECKED_GL_CALL(glGenTextures, 1, &texture_id);
+    CHECKED_GL_CALL(glBindTexture, GL_TEXTURE_2D_MULTISAMPLE, texture_id);
+    CHECKED_GL_CALL(glTexImage2DMultisample, GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height, GL_TRUE);
+    return texture_id;
+}
+
+uint32_t engine::graphics::OpenGL::create_multisample_rbo(int width, int height, int samples) {
+    uint32_t rbo;
+    CHECKED_GL_CALL(glGenRenderbuffers, 1, &rbo);
+    CHECKED_GL_CALL(glBindRenderbuffer, GL_RENDERBUFFER, rbo);
+    CHECKED_GL_CALL(glRenderbufferStorageMultisample, GL_RENDERBUFFER, samples, GL_DEPTH24_STENCIL8, width, height);
+    return rbo;
+}
+uint32_t engine::graphics::OpenGL::create_framebuffer() {
+    uint32_t fbo = 0;
+    CHECKED_GL_CALL(glGenFramebuffers, 1, &fbo);
+    return fbo;
+}
+
+void engine::graphics::OpenGL::attach_texture_to_framebuffer(uint32_t fbo, uint32_t texture, int attachment_index, bool multisample) {
+    // bind framebuffer
+    CHECKED_GL_CALL(glBindFramebuffer, GL_FRAMEBUFFER, fbo);
+    GLenum texTarget = multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+    GLenum attachment = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + attachment_index);
+    CHECKED_GL_CALL(glFramebufferTexture2D, GL_FRAMEBUFFER, attachment, texTarget, texture, 0);
+}
+
+void engine::graphics::OpenGL::attach_renderbuffer_to_framebuffer(uint32_t fbo, uint32_t rbo) {
+    CHECKED_GL_CALL(glBindFramebuffer, GL_FRAMEBUFFER, fbo);
+    CHECKED_GL_CALL(glFramebufferRenderbuffer, GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+}
+
+bool engine::graphics::OpenGL::is_framebuffer_complete(uint32_t fbo) {
+    CHECKED_GL_CALL(glBindFramebuffer, GL_FRAMEBUFFER, fbo);
+    GLenum status = CHECKED_GL_CALL(glCheckFramebufferStatus, GL_FRAMEBUFFER);
+    return status == GL_FRAMEBUFFER_COMPLETE;
+}
+
+int engine::graphics::OpenGL::max_samples() {
+    GLint v = 0;
+    CHECKED_GL_CALL(glGetIntegerv, GL_MAX_SAMPLES, &v);
+    return static_cast<int>(v);
+}
+uint32_t engine::graphics::OpenGL::create_texture(int width, int height) {
+    uint32_t texture_id;
+    CHECKED_GL_CALL(glGenTextures, 1, &texture_id);
+    CHECKED_GL_CALL(glBindTexture, GL_TEXTURE_2D, texture_id);
+    CHECKED_GL_CALL(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    CHECKED_GL_CALL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    CHECKED_GL_CALL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CHECKED_GL_CALL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    CHECKED_GL_CALL(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    return texture_id;
+}
+
+void engine::graphics::OpenGL::blit_framebuffer(uint32_t read_fbo, uint32_t draw_fbo, int width, int height) {
+    CHECKED_GL_CALL(glBindFramebuffer, GL_READ_FRAMEBUFFER, read_fbo);
+    CHECKED_GL_CALL(glBindFramebuffer, GL_DRAW_FRAMEBUFFER, draw_fbo);
+    CHECKED_GL_CALL(glBlitFramebuffer, 0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+}
+
+void engine::graphics::OpenGL::delete_framebuffers(uint32_t count, const uint32_t* framebuffers) {
+    CHECKED_GL_CALL(glDeleteFramebuffers, count, framebuffers);
+}
+
+void engine::graphics::OpenGL::delete_textures(uint32_t count, const uint32_t* textures) {
+    CHECKED_GL_CALL(glDeleteTextures, count, textures);
+}
+
+void engine::graphics::OpenGL::delete_renderbuffers(uint32_t count, const uint32_t* renderbuffers) {
+    CHECKED_GL_CALL(glDeleteRenderbuffers, count, renderbuffers);
+}
+
 
 uint32_t face_index(std::string_view name) {
     if (name == "right") {
